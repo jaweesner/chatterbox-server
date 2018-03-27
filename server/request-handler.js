@@ -38,7 +38,7 @@ var requestHandler = function(request, response) {
 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
   var statusCode;
-  var headers = defaultCorsHeaders;
+  headers = defaultCorsHeaders;
   var responseObj = '';  
   //headers['Content-Type'] = 'default';
   //var baseUrl = request.url.split('?')[0];
@@ -190,7 +190,6 @@ if (request.url.split('?')[0] !== '/classes/messages'){
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
