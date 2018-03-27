@@ -11,9 +11,11 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var fs = require('fs');
 var http = require('http');
-    var messages = [];
-    var idCounter = 0;
+var messages = [];
+var idCounter = 0;
+var clientPath = "./client/chatter/client/"
 
 var requestHandler = function(request, response) {
 
@@ -38,9 +40,36 @@ var requestHandler = function(request, response) {
   var statusCode;
   var headers = defaultCorsHeaders;
   var responseObj = '';  
+  //headers['Content-Type'] = 'default';
+  var baseUrl = request.url.split('?')[0];
+  if(baseUrl === "/"){
+   fs.readFile( clientPath + "index.html", function (err, data) {
+      if(err){
+      console.log(err);
+      }
+      console.log(data);
+      
+      //response.writeHead(200, {'Content-Type': 'text/html'});
+      response.write(data);
+      response.end();
+   });
+  }else if(baseURL == "/scripts/app.js"){
+    fs.readFile(clientPath + baseURL, function (err, data) {
+      if(err){
+      console.log(err);
+      }
+      console.log(data);
+      
+      response.writeHead(200, {'Content-Type': 'text/html'});
+      response.write(data);
+      response.end();
+   });
 
-  if (request.url.split('?')[0] !== '/classes/messages'){
+
+  } else if (request.url.split('?')[0] !== '/classes/messages'){
     statusCode = 404; 
+    response.writeHead(statusCode, headers);
+    response.end(responseObj);
   } else if (request.method === 'GET'){
     // The outgoing status.  
     statusCode = 200;
@@ -55,11 +84,13 @@ var requestHandler = function(request, response) {
     //   console.log(err);
     // });
     responseObj = JSON.stringify({results: messages});
-
+    response.writeHead(statusCode, headers);
+    response.end(responseObj);
   } else if (request.method === 'POST'){
     // The outgoing status.    
     //debugger;
     statusCode = 201;
+    headers['Content-Type'] = 'text/plain';
     // See the note below about CORS headers.
     var body = [];
     request.on('error', (err) => {
@@ -76,10 +107,12 @@ var requestHandler = function(request, response) {
       //
       // You will need to change this if you are sending something
       // other than plain text, like JSON or HTML.
-      headers['Content-Type'] = 'text/plain';
+
       var messageObj = JSON.parse(body);
       messageObj.objectId = ++idCounter;
       messages.push(messageObj)
+    response.writeHead(statusCode, headers);
+    response.end(responseObj);
     });
   } else if (request.method === 'OPTIONS'){
     // The outgoing status.    
@@ -95,12 +128,14 @@ var requestHandler = function(request, response) {
     //   // This prints the error message and stack trace to `stderr`.
     //   console.error(err);
     // });
+    response.writeHead(statusCode, headers);
+    response.end(responseObj);
   } else {
     statusCode = 405;
+    response.writeHead(statusCode, headers);
+    response.end(responseObj);
   }
   console.log(statusCode)
-  response.writeHead(statusCode, headers);
-  response.end(responseObj);
 }
 
 
