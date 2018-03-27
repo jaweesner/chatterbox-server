@@ -13,7 +13,7 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 var fs = require('fs');
 var http = require('http');
-var messages = [];
+//var messages = [];
 var idCounter = 0;
 var clientPath = "./client/chatter/client/"
 
@@ -41,38 +41,44 @@ var requestHandler = function(request, response) {
   var headers = defaultCorsHeaders;
   var responseObj = '';  
   //headers['Content-Type'] = 'default';
-  var baseUrl = request.url.split('?')[0];
-  if(baseUrl === "/"){
-   fs.readFile( clientPath + "index.html", function (err, data) {
-      if(err){
-      console.log(err);
-      }
-      console.log(data);
+  //var baseUrl = request.url.split('?')[0];
+  // if(baseUrl === "/"){
+  //  fs.readFile( clientPath + "index.html", function (err, data) {
+  //     if(err){
+  //     console.log(err);
+  //     }
+  //     console.log(data);
       
-      //response.writeHead(200, {'Content-Type': 'text/html'});
-      response.write(data);
-      response.end();
-   });
-  }else if(baseURL == "/scripts/app.js"){
-    fs.readFile(clientPath + baseURL, function (err, data) {
-      if(err){
-      console.log(err);
-      }
-      console.log(data);
+  //     //response.writeHead(200, {'Content-Type': 'text/html'});
+  //     response.write(data);
+  //     response.end();
+  //  });
+  // }else if(baseUrl == "/scripts/app.js"){
+  //   fs.readFile(clientPath + baseUrl, function (err, data) {
+  //     if(err){
+  //     console.log(err);
+  //     }
+  //     console.log(data);
       
-      response.writeHead(200, {'Content-Type': 'text/html'});
-      response.write(data);
-      response.end();
-   });
+  //     response.writeHead(200, {'Content-Type': 'application/javascript'});
+  //     response.write(data);
+  //     response.end();
+  //  });
 
 
-  } else if (request.url.split('?')[0] !== '/classes/messages'){
+  // } else 
+if (request.url.split('?')[0] !== '/classes/messages'){
     statusCode = 404; 
     response.writeHead(statusCode, headers);
     response.end(responseObj);
   } else if (request.method === 'GET'){
-    // The outgoing status.  
-    statusCode = 200;
+    // The outgoing status.
+    fs.readFile('./server/dataMessage.txt', function(err, data){
+      if(err){
+        console.log(err);
+      } else {
+        // console.log(data);
+            statusCode = 200;
     // See the note below about CORS headers.
     // Tell the client we are sending them plain text.
     //
@@ -83,9 +89,17 @@ var requestHandler = function(request, response) {
     //   // This prints the error message and stack trace to `stderr`.
     //   console.log(err);
     // });
-    responseObj = JSON.stringify({results: messages});
+    responseObj = data.toString();
+    responseObj = '{"results":['+responseObj+']}';
+    console.log('responseObj' + responseObj);
+    //JSON.stringify({results: messages});
     response.writeHead(statusCode, headers);
     response.end(responseObj);
+      }
+    }) 
+
+ 
+
   } else if (request.method === 'POST'){
     // The outgoing status.    
     //debugger;
@@ -107,12 +121,15 @@ var requestHandler = function(request, response) {
       //
       // You will need to change this if you are sending something
       // other than plain text, like JSON or HTML.
-
-      var messageObj = JSON.parse(body);
+      var messageObj = JSON.parse(body)
       messageObj.objectId = ++idCounter;
-      messages.push(messageObj)
-    response.writeHead(statusCode, headers);
-    response.end(responseObj);
+      messageObj = ',' + JSON.stringify(messageObj)
+      fs.appendFile('./server/dataMessage.txt', messageObj, function(err){
+      if(err){
+        console.log(err);
+      }})
+      response.writeHead(statusCode, headers);
+      response.end(responseObj);
     });
   } else if (request.method === 'OPTIONS'){
     // The outgoing status.    

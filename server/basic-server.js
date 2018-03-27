@@ -9,7 +9,7 @@ var http = require('http');
 var messages = [
     {
       username: 'David',
-      text: 'hello, world :)',
+      text: 'hello, world',
       roomname: 'lobby'
     }
 ]
