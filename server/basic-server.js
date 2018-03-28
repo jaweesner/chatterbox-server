@@ -3,6 +3,7 @@ var fs = require('fs');
 var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
+var Stream = require('stream');
 
 
 var defaultCorsHeaders = {
@@ -38,21 +39,27 @@ var ip = '127.0.0.1';
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
+
 var getHandler = function(req, res){
-  fs.readFile('./server/dataMessage.txt', function(err, data){
-    if(err){
-      console.log(err);
-    } else {
-      res.status(200);
-      console.log(res);
-      res.type('json');
-      res.set(headers);
-      responseObj = data.toString();
-      responseObj = '{"results":['+responseObj+']}';
-      res.send(responseObj);
-    }
-  })
-}; 
+  var readStream = fs.createReadStream('./server/dataMessage.txt')
+  res.status(200);
+  res.type('json');
+  res.set(headers);
+  res.write('{"results":[', () => {
+    readStream.on('open', () => {
+        readStream.pipe(res, {end:false});
+        readStream.on('end', () => {
+          res.write(']}', () => {
+             res.end();
+          })
+
+
+        })
+
+      })
+    })
+  };
 
 
 
